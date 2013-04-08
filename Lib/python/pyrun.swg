@@ -1332,7 +1332,7 @@ SWIG_Python_NewShadowInstance(SwigPyClientData *data, PyObject *swig_this)
 #if PY_VERSION_HEX >= 0x03000000
     inst = PyBaseObject_Type.tp_new((PyTypeObject*) data->newargs, Py_None, Py_None);
     if (inst) {
-      PyObject_SetAttr(inst, SWIG_This(), swig_this);
+      PyObject_GenericSetAttr(inst, SWIG_This(), swig_this);
       Py_TYPE(inst)->tp_flags &= ~Py_TPFLAGS_VALID_VERSION_TAG;
     }
 #else
