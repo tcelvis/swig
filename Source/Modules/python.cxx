@@ -1547,21 +1547,31 @@ public:
    *    (eg. number or string), or translate it to a Python literal.
    * ------------------------------------------------------------ */
   String *convertValue(String *v, SwigType *t) {
-    if (v && Len(v) > 0) {
-      char fc = (Char(v))[0];
-      if (('0' <= fc && fc <= '9') || '\'' == fc || '"' == fc) {
-	/* number or string (or maybe NULL pointer) */
-	if (SwigType_ispointer(t) && Strcmp(v, "0") == 0)
-	  return NewString("None");
-	else
-	  return v;
+    int len;
+    if (v && (len = Len(v)) > 0) {
+      char *cptr = Char(v);
+      char fc = cptr[0];
+      if ('0' <= fc && fc <= '9') {
+          /* number (or maybe NULL pointer) */
+          if (SwigType_ispointer(t) && Strcmp(v, "0") == 0)
+            return NewString("None");
+
+          /* strip integer suffix */
+          fc = cptr[--len];
+          while (fc == 'u' || fc == 'U' || fc == 'l' || fc == 'L')
+              fc = cptr[--len];
+          cptr[len+1] = '\0';
+
+          return v;
       }
+      if ('\'' == fc || '"' == fc)
+	      return v;
       if (Strcmp(v, "true") == 0 || Strcmp(v, "TRUE") == 0)
-	return NewString("True");
+        return NewString("True");
       if (Strcmp(v, "false") == 0 || Strcmp(v, "FALSE") == 0)
-	return NewString("False");
+        return NewString("False");
       if (Strcmp(v, "NULL") == 0)
-	return SwigType_ispointer(t) ? NewString("None") : NewString("0");
+        return SwigType_ispointer(t) ? NewString("None") : NewString("0");
     }
     return 0;
   }
